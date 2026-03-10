@@ -11,10 +11,8 @@ app.use(express.json());
 
 app.use("/api", portfolioRoutes);
 
-// Convert the string from process.env to a number
 const PORT = Number(process.env.PORT) || 10000;
 
-// Now 'PORT' is a number, matching the expected overload
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
