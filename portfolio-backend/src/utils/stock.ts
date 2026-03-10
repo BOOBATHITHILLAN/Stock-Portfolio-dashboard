@@ -60,4 +60,17 @@ export const getUpdatedStockData = async (stock: StockInput) => {
       }
     }
   }
+
+  // Fallback if all retries fail
+  console.error(`Failed to fetch stock data for ${stock.symbol} after multiple retries.`);
+  const investment = stock.buyPrice * stock.qty;
+  return {
+    ...stock,
+    cmp: 0,
+    peRatio: "N/A",
+    latestEarnings: "N/A",
+    investment,
+    presentValue: 0,
+    gainLoss: -investment,
+  };
 };
