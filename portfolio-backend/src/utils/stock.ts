@@ -4,73 +4,46 @@ import { StockInput } from "../types/stockTypes";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Initialize yahooFinance instance, handling ESM import behavior where it might be the class
+// Handle ESM import behavior
 const yf =
   typeof yahooFinance === "function"
     ? new (yahooFinance as any)()
     : yahooFinance;
 
-/**
- * Fetches live data and calculates financial metrics for a single stock.
- * Handles parallel API requests and provides a fallback on failure.
- */
 export const getUpdatedStockData = async (stock: StockInput) => {
-  const MAX_RETRIES = 3;
-  let delay = 1000; // start with 1 second
+  try {
+    // small delay to reduce rate limiting
+    await sleep(800);
 
-  for (let i = 0; i < MAX_RETRIES; i++) {
-    try {
-      const [quote, google]: any = await Promise.all([
-        yf.quote(stock.symbol),
-        fetchGoogleMetrics(stock.symbol),
-      ]);
+    const quote: any = await yf.quote(stock.symbol);
+    const google: any = await fetchGoogleMetrics(stock.symbol);
 
-      const cmp = quote?.regularMarketPrice || 0;
-      const investment = stock.buyPrice * stock.qty;
-      const presentValue = cmp * stock.qty;
+    const cmp = quote?.regularMarketPrice || 0;
+    const investment = stock.buyPrice * stock.qty;
+    const presentValue = cmp * stock.qty;
 
-      return {
-        ...stock,
-        cmp,
-        peRatio: google?.peRatio ?? "N/A",
-        latestEarnings: google?.netIncome ?? "N/A",
-        investment,
-        presentValue,
-        gainLoss: presentValue - investment,
-      };
-    } catch (error: any) {
-      if (error.message?.includes("429") && i < MAX_RETRIES - 1) {
-        console.warn(
-          `Rate limit hit for ${stock.symbol}. Retrying in ${delay / 1000}s...`
-        );
-        await sleep(delay);
-        delay *= 2; // Exponential backoff
-      } else {
-        console.error(`Error updating ${stock.symbol}:`, error);
-        const investment = stock.buyPrice * stock.qty;
-        return {
-          ...stock,
-          cmp: 0,
-          peRatio: "N/A",
-          latestEarnings: "N/A",
-          investment,
-          presentValue: 0,
-          gainLoss: -investment,
-        };
-      }
-    }
+    return {
+      ...stock,
+      cmp,
+      peRatio: google?.peRatio ?? "N/A",
+      latestEarnings: google?.netIncome ?? "N/A",
+      investment,
+      presentValue,
+      gainLoss: presentValue - investment,
+    };
+  } catch (error) {
+    console.error(`Error updating ${stock.symbol}:`, error);
+
+    const investment = stock.buyPrice * stock.qty;
+
+    return {
+      ...stock,
+      cmp: 0,
+      peRatio: "N/A",
+      latestEarnings: "N/A",
+      investment,
+      presentValue: 0,
+      gainLoss: -investment,
+    };
   }
-
-  // Fallback if all retries fail
-  console.error(`Failed to fetch stock data for ${stock.symbol} after multiple retries.`);
-  const investment = stock.buyPrice * stock.qty;
-  return {
-    ...stock,
-    cmp: 0,
-    peRatio: "N/A",
-    latestEarnings: "N/A",
-    investment,
-    presentValue: 0,
-    gainLoss: -investment,
-  };
 };
