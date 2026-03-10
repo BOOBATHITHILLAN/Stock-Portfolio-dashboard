@@ -3,12 +3,10 @@ import rateLimit from "express-rate-limit";
 import { getPortfolioData } from "../controllers/portfolioController";
 
 const router = Router();
-
-// Allow max 4 requests per minute per IP
 const portfolioLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute window
+  windowMs: 60 * 1000,
   max: 4,
-  standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
+  standardHeaders: true,
   legacyHeaders: false,
   message: {
     status: "error",

@@ -3,8 +3,6 @@ import { fetchGoogleMetrics } from "./scraper";
 import { StockInput } from "../types/stockTypes";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// Handle ESM import behavior
 const yf =
   typeof yahooFinance === "function"
     ? new (yahooFinance as any)()
