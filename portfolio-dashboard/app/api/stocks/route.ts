@@ -21,7 +21,7 @@ export const GET = async () => {
 
     console.log(`Fetching stocks from: ${API_BASE}/api/portfolio`);
     const { data } = await axios.get(`${API_BASE}/api/portfolio`, {
-      timeout: 30000,
+      timeout: 0,
     });
 
     cachedData = data;
@@ -42,7 +42,7 @@ export const GET = async () => {
       error instanceof Error ? error.message : "Failed to fetch portfolio";
     return NextResponse.json(
       { status: "error", message, data: null },
-      { status: 500 }
+      { status: 500 },
     );
   }
 };
